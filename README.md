@@ -18,8 +18,8 @@
 - [核心成果](#核心成果)
 - [项目结构](#项目结构)
 - [实验概览](#实验概览)
-  - [实验 1：DPO 生成质量优化](#实验-1dpo-生成质量优化)
-  - [实验 2：开放式金融 SFT](#实验-2开放式金融-sft)
+  - [实验 1：开放式金融 SFT](#实验-1开放式金融-sft)
+  - [实验 2：DPO 生成质量优化](#实验-2dpo-生成质量优化)
 - [快速复现](#快速复现)
 - [文件说明](#文件说明)
 - [注意事项](#注意事项)
@@ -30,8 +30,8 @@
 
 | 实验 | 评测集 | 基座 / 对照 | 最佳结果 | 关键提升 |
 |------|--------|-------------|----------|----------|
-| **DPO** | 300 题 pairwise 质量评估 | SFT 生成质量 | **25.0% 胜率**（SFT 仅 13.3%） | 生成质量显著提升 |
 | **SFT** | Fineval val（1,151 题，严格格式） | 67.94%（宽松格式） | **71.76%** | 格式规范化提升 3.8 pp |
+| **DPO** | 300 题 pairwise 质量评估 | SFT 生成质量 | **25.0% 胜率**（SFT 仅 13.3%） | 生成质量显著提升 |
 | **Fineval 基座** | Fineval val | — | 67.59% | — |
 
 > **pp** = percentage points（百分点）
@@ -40,9 +40,9 @@
 
 1. **开放式 SFT 有效**：在不使用单项选择题作为 SFT 数据的情况下，模型在 Fineval 上从基座 67.59% 提升到严格格式下的 **71.76%**。
 2. **输出格式对评测分数影响很大**：强制使用“答案：X / 解析：…”格式后，SFT 的 Fineval 分数从 67.94% 提升到 **71.76%**。
-3. **DPO 显著提升生成质量**：在专业性、推理清晰度、完整性等维度上全面超过 SFT，pairwise 胜率从 13.3% 提升到 **25.0%**。
-4. **生成质量与选项正确率存在 trade-off**：DPO 的生成质量更好，但 Fineval 选项正确率从 71.3% 下降到 67.7%。
-5. **SFT 弱项**：投资学（36.84%）、金融工程（50.00%）、宏观经济学（54.84%）、计量经济学（55.56%）等科目仍有较大提升空间。
+3. **SFT 弱项**：投资学（36.84%）、金融工程（50.00%）、宏观经济学（54.84%）、计量经济学（55.56%）等科目仍有较大提升空间。
+4. **DPO 显著提升生成质量**：在专业性、推理清晰度、完整性等维度上全面超过 SFT，pairwise 胜率从 13.3% 提升到 **25.0%**。
+5. **生成质量与选项正确率存在 trade-off**：DPO 的生成质量更好，但 Fineval 选项正确率从 71.3% 下降到 67.7%。
 
 ---
 
@@ -56,9 +56,9 @@ finetune-qwen2.5-3B-Instruct/
 ├── scripts/
 │   ├── download_model.py           # 下载 Qwen2.5-3B-Instruct
 │   ├── data/                       # 数据构造脚本
-│   │   ├── build_dpo_data.py       # 构造 DPO preference pairs（质量评分）
 │   │   ├── build_finance_sft_data.py      # 从 BAAI 金融语料构造开放式 SFT 数据
-│   │   └── build_cflue_calc_sft.py        # 从 CFLUE 计算题改写为开放式问答
+│   │   ├── build_cflue_calc_sft.py        # 从 CFLUE 计算题改写为开放式问答
+│   │   └── build_dpo_data.py              # 构造 DPO preference pairs（质量评分）
 │   ├── training/                   # 训练脚本
 │   │   ├── train_cflue_lora.py     # LoRA SFT 训练
 │   │   └── train_cflue_dpo.py      # DPO / IPO 训练
@@ -67,8 +67,8 @@ finetune-qwen2.5-3B-Instruct/
 │       ├── evaluate_fineval_finetuned.py    # Fineval 微调模型评测
 │       ├── evaluate_fineval_strict.py       # Fineval 严格格式评测
 │       ├── evaluate_ceval.py                # C-Eval 通用能力评测
-│       ├── evaluate_dpo_quality.py          # pairwise 生成质量评测
-│       └── eval_finance_sft.py              # 开放式金融 SFT 推理测试
+│       ├── eval_finance_sft.py              # 开放式金融 SFT 推理测试
+│       └── evaluate_dpo_quality.py          # pairwise 生成质量评测
 ├── reports/                        # 实验报告
 │   └── DPO_Generation_Quality_Report.md
 ├── results/                        # 评测结果摘要（不含完整 raw output）
@@ -82,7 +82,26 @@ finetune-qwen2.5-3B-Instruct/
 
 ## 实验概览
 
-### 实验 1：DPO 生成质量优化
+### 实验 1：开放式金融 SFT
+
+- **动机**：避免模型只学会做选择题，从高质量金融文本和 CFLUE 计算题中构造**开放式**金融问答对，提升真实金融能力。
+- **数据**：
+  - BAAI IndustryCorpus2 金融 high 子集 → 概念理解、政策解读、市场分析、实务应用、摘要抽取等 **14,716 条**
+  - CFLUE 计算题改写 → **1,786 条**开放式计算/推理题
+  - 合并 **SFT：16,502 条**
+- **关键脚本**：
+  - 数据：`scripts/data/build_finance_sft_data.py`、`scripts/data/build_cflue_calc_sft.py`
+  - 训练：`scripts/training/train_cflue_lora.py`
+  - 评测：`scripts/evaluation/evaluate_fineval_strict.py`
+- **结果**：
+
+| 模型 | Fineval 正确率 |
+|------|----------------|
+| 基座 | 67.59% |
+| SFT（宽松格式） | 67.94% |
+| **SFT（严格格式）** | **71.76%** |
+
+### 实验 2：DPO 生成质量优化
 
 - **目标**：不只是提升选项正确率，而是提升回答的**专业性、推理清晰度、完整性和格式规范**。
 - **数据**：从 CFLUE 单项选择题中采样 7,000 题，每题用 SFT 模型生成 4 个回答；DeepSeek 按生成质量打分（不看选项对错），分差 ≥2 才构造 pair，最终 **7,701 pairs**。
@@ -101,25 +120,6 @@ finetune-qwen2.5-3B-Instruct/
 | 选项正确率 | **71.3%** | 67.7% |
 
 > 生成质量提升明显，但选项正确率下降，说明存在 **quality-accuracy trade-off**。
-
-### 实验 2：开放式金融 SFT
-
-- **动机**：避免模型只学会做选择题，从高质量金融文本和 CFLUE 计算题中构造**开放式**金融问答对，提升真实金融能力。
-- **数据**：
-  - BAAI IndustryCorpus2 金融 high 子集 → 概念理解、政策解读、市场分析、实务应用、摘要抽取等 **14,716 条**
-  - CFLUE 计算题改写 → **1,786 条**开放式计算/推理题
-  - 合并 **SFT：16,502 条**
-- **关键脚本**：
-  - 数据：`scripts/data/build_finance_sft_data.py`、`scripts/data/build_cflue_calc_sft.py`
-  - 训练：`scripts/training/train_cflue_lora.py`
-  - 评测：`scripts/evaluation/evaluate_fineval_strict.py`
-- **结果**：
-
-| 模型 | Fineval 正确率 |
-|------|----------------|
-| 基座 | 67.59% |
-| SFT（宽松格式） | 67.94% |
-| **SFT（严格格式）** | **71.76%** |
 
 ---
 
@@ -207,17 +207,17 @@ python scripts/evaluation/evaluate_dpo_quality.py \
 
 | 文件 | 说明 |
 |------|------|
-| `scripts/data/build_dpo_data.py` | 用 SFT 模型生成多组答案，DeepSeek 按生成质量打分，构造 DPO preference pairs |
 | `scripts/data/build_finance_sft_data.py` | 从 BAAI IndustryCorpus2 金融 high 子采样构造开放式金融问答对 |
 | `scripts/data/build_cflue_calc_sft.py` | 把 CFLUE 中的计算题改写成开放式计算/推理问答 |
+| `scripts/data/build_dpo_data.py` | 用 SFT 模型生成多组答案，DeepSeek 按生成质量打分，构造 DPO preference pairs |
 | `scripts/training/train_cflue_lora.py` | LoRA SFT 训练脚本 |
 | `scripts/training/train_cflue_dpo.py` | DPO / IPO 训练脚本（支持 `sigmoid`、`ipo` 等 loss_type） |
 | `scripts/evaluation/evaluate_fineval.py` | Fineval 基座模型评测 |
 | `scripts/evaluation/evaluate_fineval_finetuned.py` | Fineval 微调模型评测（通用 adapter 评测脚本） |
 | `scripts/evaluation/evaluate_fineval_strict.py` | 强制“答案：X / 解析：…”格式的 Fineval 评测 |
 | `scripts/evaluation/evaluate_ceval.py` | C-Eval 通用能力评测 |
-| `scripts/evaluation/evaluate_dpo_quality.py` | pairwise 生成质量评测 |
 | `scripts/evaluation/eval_finance_sft.py` | 开放式金融 SFT 推理测试 |
+| `scripts/evaluation/evaluate_dpo_quality.py` | pairwise 生成质量评测 |
 
 ---
 
