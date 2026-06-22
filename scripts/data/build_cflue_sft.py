@@ -112,7 +112,7 @@ def main():
     
     # 统计
     total = sum(len(items) for items in sft_data_by_split.values())
-    print(f'\n单项选择题 SFT 数据量:')
+    print(f'\n单项选择题数据量:')
     for split_name, items in sft_data_by_split.items():
         with_analysis = sum(1 for x in items if x['has_analysis'])
         print(f'  {split_name}: {len(items)} 条（含解析: {with_analysis}, 无解析: {len(items)-with_analysis}）')

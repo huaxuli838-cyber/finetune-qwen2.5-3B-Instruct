@@ -242,7 +242,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data_dir", type=str,
                         default="./BAAI_IndustryCorpus2_finance_high/finance_economics/chinese/high")
-    parser.add_argument("--output_dir", type=str, default="./finance_sft_v1")
+    parser.add_argument("--output_dir", type=str, default="./finance_sft")
     parser.add_argument("--n_passages", type=int, default=5000,
                         help="采样的原文档数，每个文档期望生成 1-3 个问答对")
     parser.add_argument("--min_len", type=int, default=500)

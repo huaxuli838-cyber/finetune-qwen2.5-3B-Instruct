@@ -27,7 +27,7 @@ def load_dpo_data(data_path: str):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--base_model_path', type=str, default='./qwen/Qwen2___5-3B-Instruct')
-    parser.add_argument('--sft_adapter_path', type=str, default='./qwen_cflue_lora/checkpoint-1896')
+    parser.add_argument('--sft_adapter_path', type=str, default='./qwen_finance_sft/final')
     parser.add_argument('--data_path', type=str, default='./cflue_dpo_data.jsonl')
     parser.add_argument('--output_dir', type=str, default='./qwen_cflue_dpo')
     parser.add_argument('--num_train_epochs', type=int, default=1)

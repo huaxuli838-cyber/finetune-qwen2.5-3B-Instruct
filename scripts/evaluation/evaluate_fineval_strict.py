@@ -134,7 +134,7 @@ def main():
     parser.add_argument('--adapter_path', type=str, required=True)
     parser.add_argument('--data_dir', type=str, default='./fineval/val')
     parser.add_argument('--batch_size', type=int, default=16)
-    parser.add_argument('--output', type=str, default='fineval_eval_finetuned_results.json')
+    parser.add_argument('--output', type=str, default='fineval_eval_strict_results.json')
     args = parser.parse_args()
     
     system_prompt = (

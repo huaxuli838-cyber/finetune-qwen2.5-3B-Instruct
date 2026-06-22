@@ -14,8 +14,8 @@ from transformers import (
 from peft import LoraConfig, get_peft_model, TaskType
 
 
-class CFLUESFTDataset(Dataset):
-    """CFLUE SFT 数据集"""
+class SFTDataset(Dataset):
+    """SFT 数据集"""
     def __init__(self, data_path, tokenizer, max_length=2048):
         self.tokenizer = tokenizer
         self.max_length = max_length
@@ -128,7 +128,7 @@ def main():
     model.config.use_cache = False
     
     # 加载数据集
-    dataset = CFLUESFTDataset(args.data_path, tokenizer, max_length=args.max_length)
+    dataset = SFTDataset(args.data_path, tokenizer, max_length=args.max_length)
     
     # 简单划分 train/val（90/10）
     train_size = int(0.95 * len(dataset))

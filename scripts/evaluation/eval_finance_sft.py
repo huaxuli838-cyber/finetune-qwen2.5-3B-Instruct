@@ -4,8 +4,8 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from peft import PeftModel
 
 BASE_MODEL = './qwen/Qwen2___5-3B-Instruct'
-ADAPTER_PATH = './qwen_finance_sft_v2/final'
-OUTPUT_PATH = './qwen_finance_sft_v2/inference_test_results.jsonl'
+ADAPTER_PATH = './qwen_finance_sft/final'
+OUTPUT_PATH = './qwen_finance_sft/inference_test_results.jsonl'
 
 TEST_PROMPTS = [
     {

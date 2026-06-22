@@ -1,6 +1,6 @@
 # 数据格式示例
 
-## CFLUE 单项选择题 SFT 格式
+## CFLUE 单项选择题数据格式
 
 ```json
 {
@@ -15,7 +15,7 @@
 }
 ```
 
-## 金融领域开放式 SFT v2 格式
+## 金融领域开放式 SFT 格式
 
 ```json
 {
@@ -27,7 +27,7 @@
 }
 ```
 
-## DPO v8 preference pair 格式
+## DPO preference pair 格式
 
 ```json
 {

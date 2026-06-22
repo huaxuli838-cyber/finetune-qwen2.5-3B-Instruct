@@ -1,5 +1,5 @@
 {
-  "experiment": "DPO v8 IPO pairwise quality eval",
+  "experiment": "DPO pairwise quality eval",
   "total": 300,
   "sft_win": 46,
   "dpo_win": 75,

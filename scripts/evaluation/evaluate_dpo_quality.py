@@ -171,12 +171,12 @@ def call_judge(client, question, options_text, ans_a, ans_b, max_retries=3):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--base_model_path', type=str, default='./qwen/Qwen2___5-3B-Instruct')
-    parser.add_argument('--sft_adapter_path', type=str, default='./qwen_cflue_lora/checkpoint-1896')
-    parser.add_argument('--dpo_adapter_path', type=str, default='./qwen_cflue_dpo_v7/final')
-    parser.add_argument('--test_prompts', type=str, default='./dpo_eval_test_prompts_v6_fmt.jsonl')
+    parser.add_argument('--sft_adapter_path', type=str, default='./qwen_finance_sft/final')
+    parser.add_argument('--dpo_adapter_path', type=str, default='./qwen_cflue_dpo/final')
+    parser.add_argument('--test_prompts', type=str, default='./dpo_eval_test_prompts.jsonl')
     parser.add_argument('--batch_size', type=int, default=8)
     parser.add_argument('--max_workers', type=int, default=16)
-    parser.add_argument('--output', type=str, default='dpo_quality_eval_v7_results.json')
+    parser.add_argument('--output', type=str, default='dpo_quality_eval_results.json')
     args = parser.parse_args()
 
     items = [json.loads(line) for line in open(args.test_prompts, encoding='utf-8')]

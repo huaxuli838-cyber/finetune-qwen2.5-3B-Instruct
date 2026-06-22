@@ -228,7 +228,7 @@ def select_calc_items(data_path: str, n_target: int, cap_per_subject: int, rando
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--cflue_path", type=str, default="./cflue_sft/cflue_single_choice_all.jsonl")
-    parser.add_argument("--output_dir", type=str, default="./finance_sft_v1")
+    parser.add_argument("--output_dir", type=str, default="./finance_sft")
     parser.add_argument("--n_target", type=int, default=1800)
     parser.add_argument("--cap_per_subject", type=int, default=200)
     parser.add_argument("--max_workers", type=int, default=8)
@@ -309,7 +309,7 @@ def main():
 
     save_jsonl(valid_pairs, os.path.join(args.output_dir, "finance_sft_calc_rewritten.jsonl"))
 
-    # 合并到 v1 数据（如果存在）
+    # 合并到已有数据（如果存在）
     all_path = os.path.join(args.output_dir, "finance_sft_all.jsonl")
     if os.path.exists(all_path):
         existing = []
@@ -322,10 +322,10 @@ def main():
         n_val = max(1, int(len(combined) * 0.05))
         train = combined[n_val:]
         val = combined[:n_val]
-        save_jsonl(combined, os.path.join(args.output_dir, "finance_sft_v2_all.jsonl"))
-        save_jsonl(train, os.path.join(args.output_dir, "finance_sft_v2_train.jsonl"))
-        save_jsonl(val, os.path.join(args.output_dir, "finance_sft_v2_val.jsonl"))
-        print(f"已合并为 v2: 总计 {len(combined)}, 训练 {len(train)}, 验证 {len(val)}")
+        save_jsonl(combined, os.path.join(args.output_dir, "finance_sft_all.jsonl"))
+        save_jsonl(train, os.path.join(args.output_dir, "finance_sft_train.jsonl"))
+        save_jsonl(val, os.path.join(args.output_dir, "finance_sft_val.jsonl"))
+        print(f"已合并: 总计 {len(combined)}, 训练 {len(train)}, 验证 {len(val)}")
     else:
         random.seed(args.random_state)
         random.shuffle(valid_pairs)

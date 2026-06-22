@@ -2,7 +2,7 @@
 qwen/
 qwen_cflue_lora/
 qwen_cflue_dpo*/
-qwen_finance_sft_v2/
+qwen_finance_sft/
 *.bin
 *.safetensors
 *.pt
@@ -16,7 +16,7 @@ cflue_sft_final/
 fineval/
 ceval/
 BAAI_IndustryCorpus2_finance_high/
-finance_sft_v1/
+finance_sft/
 *.parquet
 *.csv
 
