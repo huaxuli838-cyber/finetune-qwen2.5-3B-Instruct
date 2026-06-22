@@ -1,0 +1,34 @@
+{
+  "experiment": "DPO v8 IPO pairwise quality eval",
+  "total": 300,
+  "sft_win": 46,
+  "dpo_win": 75,
+  "tie": 179,
+  "sft_win_rate": 0.15333333333333332,
+  "dpo_win_rate": 0.25,
+  "tie_rate": 0.5966666666666667,
+  "sft_option_accuracy": 0.7133333333333334,
+  "dpo_option_accuracy": 0.6766666666666666,
+  "dimension_averages": {
+    "professionalism": {
+      "sft": 3.533333333333333,
+      "dpo": 3.743333333333333
+    },
+    "reasoning_clarity": {
+      "sft": 3.09,
+      "dpo": 3.39
+    },
+    "format": {
+      "sft": 4.37,
+      "dpo": 4.42
+    },
+    "completeness": {
+      "sft": 2.6666666666666665,
+      "dpo": 3.013333333333333
+    },
+    "fluency": {
+      "sft": 4.6466666666666665,
+      "dpo": 4.746666666666667
+    }
+  }
+}

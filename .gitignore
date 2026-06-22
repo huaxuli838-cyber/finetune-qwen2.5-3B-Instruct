@@ -1,0 +1,35 @@
+# Models and large checkpoints
+qwen/
+qwen_cflue_lora/
+qwen_cflue_dpo*/
+qwen_finance_sft_v2/
+*.bin
+*.safetensors
+*.pt
+*.pth
+pytorch_model.bin
+
+# Datasets
+cflue_full/
+cflue_sft/
+cflue_sft_final/
+fineval/
+ceval/
+BAAI_IndustryCorpus2_finance_high/
+finance_sft_v1/
+*.parquet
+*.csv
+
+# Large generated data files
+*.jsonl
+cache/
+dpo_*_cache/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.env
+
+# Logs
+*.log
