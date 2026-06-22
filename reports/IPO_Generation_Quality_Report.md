@@ -1,10 +1,10 @@
-# DPO 生成质量评测报告
+# IPO 生成质量评测报告
 
 ## 1. 核心结论
 
-在“只看生成质量、不看选项正确性”的 pairwise 评测中，DPO（IPO）相比 SFT 取得了明显领先。
+在“只看生成质量、不看选项正确性”的 pairwise 评测中，IPO 相比 SFT 取得了明显领先。
 
-| 指标 | SFT | DPO |
+| 指标 | SFT | IPO |
 |---|---|---|
 | **pairwise 胜率** | 13.3% | **25.0%** |
 | 平局率 | 68.7% | 59.7% |
@@ -13,11 +13,11 @@
 
 > 评测说明：本次 judge 被明确要求**不要看最终选项字母是否正确**，只比较回答的专业性、推理清晰度、格式规范、完整性和语言流畅度。
 
-**当前最佳模型**：`./qwen_cflue_dpo/final`
+**当前最佳模型**：`./qwen_cflue_ipo/final`
 
 ## 2. 各维度平均分
 
-| 维度 | SFT | DPO | 提升 |
+| 维度 | SFT | IPO | 提升 |
 |---|---|---|---|
 | professionalism | 3.53 | **3.74** | +0.21 |
 | reasoning_clarity | 3.09 | **3.39** | +0.30 |
@@ -51,19 +51,19 @@
 | 结果 | 数量 | 占比 |
 |---|---|---|
 | SFT 胜 | 46 | 15.3% |
-| DPO 胜 | 75 | 25.0% |
+| IPO 胜 | 75 | 25.0% |
 | 平局 | 179 | 59.7% |
 
-DPO 的胜率是 SFT 的 **1.88 倍**，且平局率明显下降。
+IPO 的胜率是 SFT 的 **1.88 倍**，且平局率明显下降。
 
 ## 6. Trade-off：选项正确率下降
 
-虽然生成质量显著提升，但 DPO 的 **选项正确率降到了 67.7%**：
+虽然生成质量显著提升，但 IPO 的 **选项正确率降到了 67.7%**：
 
 | 模型 | 选项正确率 |
 |---|---|
 | SFT | **71.3%** |
-| DPO | 67.7% |
+| IPO | 67.7% |
 
 **原因分析**：
 - 训练数据量较大，模型更专注于“生成质量”优化；
@@ -74,19 +74,19 @@ DPO 的胜率是 SFT 的 **1.88 倍**，且平局率明显下降。
 
 如果希望**在保持生成质量的同时恢复选项正确率**，可以考虑：
 
-1. **DPO + SFT 混合训练**：在 IPO 后用高质量 chosen 做短 SFT，强化正确格式和事实约束。
+1. **IPO + SFT 混合训练**：在 IPO 后用高质量 chosen 做短 SFT，强化正确格式和事实约束。
 2. **评分时引入正确性权重**：让 DeepSeek 打分给“选项正确”的回答更高分，构造出“正确且高质量”的 chosen。
 3. **换用 ORPO 或 RLAIF**：在偏好优化中同时优化 SFT 损失，避免偏离事实分布太远。
-4. **迭代 DPO**：用 DPO 模型重新采样，筛选出“高质量 + 选项正确”的 chosen 继续训练。
+4. **迭代 IPO**：用 IPO 模型重新采样，筛选出“高质量 + 选项正确”的 chosen 继续训练。
 
 ## 8. 关键文件
 
-- 数据构造脚本：`scripts/data/build_dpo_data.py`
-- 训练数据：`cflue_dpo_data.jsonl`
-- 训练输出：`./qwen_cflue_dpo/final`
-- pairwise 评测结果：`dpo_quality_eval_results.json`
-- pairwise 评测脚本：`scripts/evaluation/evaluate_dpo_quality.py`
+- 数据构造脚本：`scripts/data/build_ipo_data.py`
+- 训练数据：`cflue_ipo_data.jsonl`
+- 训练输出：`./qwen_cflue_ipo/final`
+- pairwise 评测结果：`ipo_quality_eval_results.json`
+- pairwise 评测脚本：`scripts/evaluation/evaluate_ipo_quality.py`
 
 ---
 
-**总结**：DPO（IPO）在生成质量上取得了显著进步，pairwise 胜率从 SFT 的 13.3% 提升到 **25.0%**。代价是选项正确率下降到 67.7%。如果应用目标是“高质量解释”，DPO 是目前最佳模型；如果目标是“考试答题准确率”，建议做 DPO + SFT 混合优化。
+**总结**：IPO 在生成质量上取得了显著进步，pairwise 胜率从 SFT 的 13.3% 提升到 **25.0%**。代价是选项正确率下降到 67.7%。如果应用目标是“高质量解释”，IPO 是目前最佳模型；如果目标是“考试答题准确率”，建议做 IPO + SFT 混合优化。

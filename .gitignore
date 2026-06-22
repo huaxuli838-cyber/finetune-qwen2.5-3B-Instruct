@@ -1,7 +1,7 @@
 # Models and large checkpoints
 qwen/
 qwen_cflue_lora/
-qwen_cflue_dpo*/
+qwen_cflue_ipo*/
 qwen_finance_sft/
 *.bin
 *.safetensors
@@ -23,7 +23,7 @@ finance_sft/
 # Large generated data files
 *.jsonl
 cache/
-dpo_*_cache/
+ipo_*_cache/
 
 # Python
 __pycache__/

@@ -10,8 +10,8 @@ from peft import PeftModel
 from trl import DPOTrainer, DPOConfig
 
 
-def load_dpo_data(data_path: str):
-    """加载 DPO 训练数据"""
+def load_ipo_data(data_path: str):
+    """加载 IPO 训练数据"""
     data = []
     with open(data_path, 'r', encoding='utf-8') as f:
         for line in f:
@@ -28,8 +28,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--base_model_path', type=str, default='./qwen/Qwen2___5-3B-Instruct')
     parser.add_argument('--sft_adapter_path', type=str, default='./qwen_finance_sft/final')
-    parser.add_argument('--data_path', type=str, default='./cflue_dpo_data.jsonl')
-    parser.add_argument('--output_dir', type=str, default='./qwen_cflue_dpo')
+    parser.add_argument('--data_path', type=str, default='./cflue_ipo_data.jsonl')
+    parser.add_argument('--output_dir', type=str, default='./qwen_cflue_ipo')
     parser.add_argument('--num_train_epochs', type=int, default=1)
     parser.add_argument('--per_device_train_batch_size', type=int, default=4)
     parser.add_argument('--gradient_accumulation_steps', type=int, default=8)
@@ -41,7 +41,7 @@ def main():
     parser.add_argument('--lora_alpha', type=int, default=32)
     parser.add_argument('--lora_dropout', type=float, default=0.05)
     parser.add_argument('--seed', type=int, default=42)
-    parser.add_argument('--loss_type', type=str, default='sigmoid', choices=['sigmoid', 'hinge', 'ipo', 'exo_pair'], help='DPO loss type')
+    parser.add_argument('--loss_type', type=str, default='ipo', choices=['sigmoid', 'hinge', 'ipo', 'exo_pair'], help='IPO loss type')
     args = parser.parse_args()
     
     # 加载 tokenizer
@@ -67,12 +67,12 @@ def main():
     # 打印 trainable 参数
     model.print_trainable_parameters()
     
-    # 加载 DPO 数据
-    print(f"加载 DPO 数据: {args.data_path}")
-    train_dataset = load_dpo_data(args.data_path)
-    print(f"DPO 训练样本数: {len(train_dataset)}")
-    
-    # DPO 训练参数
+    # 加载 IPO 数据
+    print(f"加载 IPO 数据: {args.data_path}")
+    train_dataset = load_ipo_data(args.data_path)
+    print(f"IPO 训练样本数: {len(train_dataset)}")
+
+    # IPO 训练参数
     training_args = DPOConfig(
         output_dir=args.output_dir,
         num_train_epochs=args.num_train_epochs,
@@ -93,7 +93,7 @@ def main():
         gradient_checkpointing=True,
     )
     
-    # 初始化 DPOTrainer
+    # 初始化 DPOTrainer（IPO 通过 loss_type='ipo' 实现）
     print("初始化 DPOTrainer...")
     trainer = DPOTrainer(
         model=model,
@@ -102,16 +102,16 @@ def main():
         train_dataset=train_dataset,
         processing_class=tokenizer,
     )
-    
+
     # 开始训练
-    print("开始 DPO 训练...")
+    print("开始 IPO 训练...")
     trainer.train()
-    
+
     # 保存最终模型
     print(f"保存最终模型到 {args.output_dir}/final")
     trainer.save_model(os.path.join(args.output_dir, 'final'))
-    
-    print("DPO 训练完成！")
+
+    print("IPO 训练完成！")
 
 
 if __name__ == '__main__':

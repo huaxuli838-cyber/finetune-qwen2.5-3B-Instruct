@@ -430,7 +430,7 @@ def score_responses(response_cache: Dict[str, Dict], client: OpenAI,
     return cache
 
 
-# ==================== 阶段 3：构造 DPO pairs ====================
+# ==================== 阶段 3：构造 IPO pairs ====================
 
 
 def construct_pairs(response_cache: Dict[str, Dict], score_cache: Dict[str, Dict],
@@ -505,10 +505,10 @@ def main():
     parser.add_argument('--input_path', type=str, default='./cflue_sft_final/cflue_single_choice_all.jsonl')
     parser.add_argument('--base_model_path', type=str, default='./qwen/Qwen2___5-3B-Instruct')
     parser.add_argument('--sft_adapter_path', type=str, default='./qwen_finance_sft/final')
-    parser.add_argument('--output', type=str, default='./cflue_dpo_data.jsonl')
+    parser.add_argument('--output', type=str, default='./cflue_ipo_data.jsonl')
     parser.add_argument('--n_total', type=int, default=7000, help='总题目数')
-    parser.add_argument('--existing_cache_dir', type=str, default='./dpo_cache', help='复用已有缓存目录')
-    parser.add_argument('--new_cache_dir', type=str, default='./dpo_cache')
+    parser.add_argument('--existing_cache_dir', type=str, default='./ipo_cache', help='复用已有缓存目录')
+    parser.add_argument('--new_cache_dir', type=str, default='./ipo_cache')
     parser.add_argument('--n_candidates', type=int, default=4)
     parser.add_argument('--temperature', type=float, default=0.8)
     parser.add_argument('--top_p', type=float, default=0.9)
@@ -589,7 +589,7 @@ def main():
     # 5. 构造 pairs
     pairs = construct_pairs(combined_response_cache, combined_score_cache, tokenizer)
 
-    print(f"\n保存 {len(pairs)} 条 DPO 数据到 {args.output}")
+    print(f"\n保存 {len(pairs)} 条 IPO 数据到 {args.output}")
     with open(args.output, 'w', encoding='utf-8') as f:
         for pair in pairs:
             f.write(json.dumps(pair, ensure_ascii=False) + '\n')

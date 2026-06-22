@@ -27,7 +27,7 @@
 }
 ```
 
-## DPO preference pair 格式
+## IPO preference pair 格式
 
 ```json
 {

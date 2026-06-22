@@ -172,11 +172,11 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--base_model_path', type=str, default='./qwen/Qwen2___5-3B-Instruct')
     parser.add_argument('--sft_adapter_path', type=str, default='./qwen_finance_sft/final')
-    parser.add_argument('--dpo_adapter_path', type=str, default='./qwen_cflue_dpo/final')
-    parser.add_argument('--test_prompts', type=str, default='./dpo_eval_test_prompts.jsonl')
+    parser.add_argument('--ipo_adapter_path', type=str, default='./qwen_cflue_ipo/final')
+    parser.add_argument('--test_prompts', type=str, default='./ipo_eval_test_prompts.jsonl')
     parser.add_argument('--batch_size', type=int, default=8)
     parser.add_argument('--max_workers', type=int, default=16)
-    parser.add_argument('--output', type=str, default='dpo_quality_eval_results.json')
+    parser.add_argument('--output', type=str, default='ipo_quality_eval_results.json')
     args = parser.parse_args()
 
     items = [json.loads(line) for line in open(args.test_prompts, encoding='utf-8')]
@@ -192,18 +192,18 @@ def main():
     del model
     torch.cuda.empty_cache()
 
-    print('加载 DPO 模型...')
-    model, tokenizer = load_model(args.base_model_path, args.dpo_adapter_path)
-    print('生成 DPO 回答...')
-    dpo_responses = generate_responses(model, tokenizer, prompts, batch_size=args.batch_size)
+    print('加载 IPO 模型...')
+    model, tokenizer = load_model(args.base_model_path, args.ipo_adapter_path)
+    print('生成 IPO 回答...')
+    ipo_responses = generate_responses(model, tokenizer, prompts, batch_size=args.batch_size)
     del model
     torch.cuda.empty_cache()
 
     # 本地选项正确率统计
     sft_correct = sum(1 for resp, gt in zip(sft_responses, answers) if extract_answer(resp) == gt)
-    dpo_correct = sum(1 for resp, gt in zip(dpo_responses, answers) if extract_answer(resp) == gt)
+    ipo_correct = sum(1 for resp, gt in zip(ipo_responses, answers) if extract_answer(resp) == gt)
     print(f"\n选项正确率：SFT {sft_correct}/{len(items)} ({sft_correct/len(items)*100:.1f}%), "
-          f"DPO {dpo_correct}/{len(items)} ({dpo_correct/len(items)*100:.1f}%)")
+          f"IPO {ipo_correct}/{len(items)} ({ipo_correct/len(items)*100:.1f}%)")
 
     api_key = os.environ.get('DEEPSEEK_API_KEY')
     if not api_key:
@@ -213,8 +213,8 @@ def main():
     judge_inputs = []
     for idx, q in enumerate(questions):
         sft_first = random.choice([True, False])
-        ans_a = sft_responses[idx] if sft_first else dpo_responses[idx]
-        ans_b = dpo_responses[idx] if sft_first else sft_responses[idx]
+        ans_a = sft_responses[idx] if sft_first else ipo_responses[idx]
+        ans_b = ipo_responses[idx] if sft_first else sft_responses[idx]
         opts = '\n'.join([f"{k}. {v}" for k, v in sorted(options_list[idx].items())])
         judge_inputs.append({
             'idx': idx,
@@ -237,16 +237,16 @@ def main():
             idx = future_to_idx[future]
             judge_results[idx] = future.result()
 
-    sft_win = dpo_win = tie = 0
+    sft_win = ipo_win = tie = 0
     dim_scores = {
-        'professionalism': {'sft': [], 'dpo': []},
-        'reasoning_clarity': {'sft': [], 'dpo': []},
-        'format': {'sft': [], 'dpo': []},
-        'completeness': {'sft': [], 'dpo': []},
-        'fluency': {'sft': [], 'dpo': []},
+        'professionalism': {'sft': [], 'ipo': []},
+        'reasoning_clarity': {'sft': [], 'ipo': []},
+        'format': {'sft': [], 'ipo': []},
+        'completeness': {'sft': [], 'ipo': []},
+        'fluency': {'sft': [], 'ipo': []},
     }
     results = []
-    for ji, jr, sft_resp, dpo_resp in zip(judge_inputs, judge_results, sft_responses, dpo_responses):
+    for ji, jr, sft_resp, ipo_resp in zip(judge_inputs, judge_results, sft_responses, ipo_responses):
         idx = ji['idx']
         a_is_sft = ji['a_is_sft']
         winner_label = jr['winner']
@@ -254,31 +254,31 @@ def main():
             tie += 1
             winner_model = 'tie'
         else:
-            winner_model = 'sft' if (winner_label == 'A' and a_is_sft) or (winner_label == 'B' and not a_is_sft) else 'dpo'
+            winner_model = 'sft' if (winner_label == 'A' and a_is_sft) or (winner_label == 'B' and not a_is_sft) else 'ipo'
             if winner_model == 'sft':
                 sft_win += 1
             else:
-                dpo_win += 1
+                ipo_win += 1
 
-        model_scores = {'sft': {}, 'dpo': {}}
+        model_scores = {'sft': {}, 'ipo': {}}
         for dim, scores in jr['dimensions'].items():
             if dim not in dim_scores:
                 continue
             if a_is_sft:
                 model_scores['sft'][dim] = scores['A']
-                model_scores['dpo'][dim] = scores['B']
+                model_scores['ipo'][dim] = scores['B']
             else:
                 model_scores['sft'][dim] = scores['B']
-                model_scores['dpo'][dim] = scores['A']
+                model_scores['ipo'][dim] = scores['A']
             dim_scores[dim]['sft'].append(model_scores['sft'][dim])
-            dim_scores[dim]['dpo'].append(model_scores['dpo'][dim])
+            dim_scores[dim]['ipo'].append(model_scores['ipo'][dim])
 
         results.append({
             'idx': idx,
             'question': ji['question'],
             'ground_truth': ji['ground_truth'],
             'sft_response': sft_resp,
-            'dpo_response': dpo_resp,
+            'ipo_response': ipo_resp,
             'winner': winner_model,
             'judge_raw': jr,
             'dimension_scores': model_scores,
@@ -287,17 +287,17 @@ def main():
     summary = {
         'total': len(items),
         'sft_win': sft_win,
-        'dpo_win': dpo_win,
+        'ipo_win': ipo_win,
         'tie': tie,
         'sft_win_rate': sft_win / len(items),
-        'dpo_win_rate': dpo_win / len(items),
+        'ipo_win_rate': ipo_win / len(items),
         'tie_rate': tie / len(items),
         'sft_option_accuracy': sft_correct / len(items),
-        'dpo_option_accuracy': dpo_correct / len(items),
+        'ipo_option_accuracy': ipo_correct / len(items),
         'dimension_averages': {
             dim: {
                 'sft': sum(scores['sft']) / len(scores['sft']),
-                'dpo': sum(scores['dpo']) / len(scores['dpo']),
+                'ipo': sum(scores['ipo']) / len(scores['ipo']),
             }
             for dim, scores in dim_scores.items()
         },
@@ -310,12 +310,12 @@ def main():
     print('\n===== 评估汇总 =====')
     print(f"总样本数: {summary['total']}")
     print(f"SFT 胜: {sft_win} ({summary['sft_win_rate']*100:.1f}%)")
-    print(f"DPO 胜: {dpo_win} ({summary['dpo_win_rate']*100:.1f}%)")
+    print(f"IPO 胜: {ipo_win} ({summary['ipo_win_rate']*100:.1f}%)")
     print(f"平局: {tie} ({summary['tie_rate']*100:.1f}%)")
-    print(f"选项正确率: SFT {summary['sft_option_accuracy']*100:.1f}% vs DPO {summary['dpo_option_accuracy']*100:.1f}%")
-    print('\n各维度平均分（SFT vs DPO）：')
+    print(f"选项正确率: SFT {summary['sft_option_accuracy']*100:.1f}% vs IPO {summary['ipo_option_accuracy']*100:.1f}%")
+    print('\n各维度平均分（SFT vs IPO）：')
     for dim, scores in summary['dimension_averages'].items():
-        print(f"  {dim}: {scores['sft']:.2f} vs {scores['dpo']:.2f} (DPO {'+' if scores['dpo']>scores['sft'] else ''}{scores['dpo']-scores['sft']:+.2f})")
+        print(f"  {dim}: {scores['sft']:.2f} vs {scores['ipo']:.2f} (IPO {'+' if scores['ipo']>scores['sft'] else ''}{scores['ipo']-scores['sft']:+.2f})")
     print(f'\n详细结果已保存: {args.output}')
 
 
